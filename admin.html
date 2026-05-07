@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>DASHBOARD ADMIN - TransLapor</title>
+    <style>
+        body { font-family: Arial; background: #343a40; color: white; padding: 20px; max-width: 900px; margin: auto; }
+        .card { background: #495057; padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; gap: 15px; }
+        img { width: 150px; height: 100px; object-fit: cover; border-radius: 4px; }
+        select, button, input { padding: 8px; margin-top: 10px; border-radius: 4px; }
+        button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1 style="color: #ffc107; text-align: center;">🛡️ DASHBOARD DINAS PERHUBUNGAN</h1>
+    
+    <div id="listAdmin"></div>
+
+    <script>
+        async function loadAdmin() {
+            const res = await fetch('/api/reports');
+            const data = await res.json();
+            const list = document.getElementById('listAdmin');
+            list.innerHTML = '';
+            data.forEach(r => {
+                list.innerHTML += `
+                    <div class="card">
+                        <img src="${r.foto_url}" alt="foto">
+                        <div>
+                            <h4>ID: #${r.id} | ${r.armada} | 📍 ${r.lokasi}</h4>
+                            <p>${r.deskripsi}</p>
+                            <strong>Status Saat Ini: ${r.status}</strong><br>
+                            <input type="password" id="pin_${r.id}" placeholder="PIN Admin">
+                            <select id="status_${r.id}">
+                                <option value="Diproses Petugas">Diproses Petugas</option>
+                                <option value="Selesai / Ditilang">Selesai / Ditilang</option>
+                                <option value="Laporan Ditolak">Laporan Ditolak</option>
+                            </select>
+                            <button onclick="updateStatus(${r.id})">Update Status</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        async function updateStatus(id) {
+            const pin = document.getElementById(`pin_${id}`).value;
+            const status = document.getElementById(`status_${id}`).value;
+            
+            const formData = new FormData();
+            formData.append("id", id);
+            formData.append("status", status);
+            formData.append("pin", pin);
+
+            const res = await fetch('/api/admin/update', { method: 'POST', body: formData });
+            if(res.ok) {
+                alert("Status Berhasil Diubah!");
+                loadAdmin();
+            } else {
+                alert("GAGAL! PIN Admin Salah.");
+            }
+        }
+        loadAdmin();
+    </script>
+</body>
+</html>

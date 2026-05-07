@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>TransLapor - Warga</title>
+    <style>
+        body { font-family: Arial; background: #f4f7f6; padding: 20px; max-width: 800px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+        input, textarea, button { width: 100%; margin: 8px 0; padding: 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; gap: 15px; }
+        .item img { width: 120px; height: 90px; object-fit: cover; border-radius: 4px; }
+        .badge { background: #ffc107; padding: 3px 8px; border-radius: 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1 style="color: #007bff; text-align: center;">🚌 TransLapor Jabar</h1>
+    <p style="text-align: center;">Layanan Pelaporan Transportasi Publik (Khusus Warga)</p>
+
+    <div class="card">
+        <h3>Lapor Kendala Transportasi</h3>
+        <form id="formLapor">
+            <input type="text" id="armada" placeholder="Armada (Cth: Angkot 05 Cicaheum)" required>
+            <input type="text" id="lokasi" placeholder="Lokasi Kejadian" required>
+            <textarea id="deskripsi" placeholder="Deskripsikan masalah (Cth: Ngetem bikin macet)" required></textarea>
+            <label>Bukti Foto:</label>
+            <input type="file" id="foto" required>
+            <button type="submit" id="btnSubmit">Kirim Laporan</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Laporan Masuk</h3>
+        <div id="listLaporan"></div>
+    </div>
+
+    <script>
+        async function loadData() {
+            const res = await fetch('/api/reports');
+            const data = await res.json();
+            const list = document.getElementById('listLaporan');
+            list.innerHTML = '';
+            data.forEach(r => {
+                list.innerHTML += `
+                    <div class="item">
+                        <img src="${r.foto_url}" alt="foto">
+                        <div>
+                            <strong>${r.armada} - 📍 ${r.lokasi}</strong> <span class="badge">${r.status}</span>
+                            <p style="margin:5px 0; font-size:14px;">${r.deskripsi}</p>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        document.getElementById('formLapor').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("armada", document.getElementById('armada').value);
+            formData.append("lokasi", document.getElementById('lokasi').value);
+            formData.append("deskripsi", document.getElementById('deskripsi').value);
+            formData.append("foto", document.getElementById('foto').files[0]);
+
+            document.getElementById('btnSubmit').innerText = "Mengirim...";
+            await fetch('/api/reports', { method: 'POST', body: formData });
+            alert("Berhasil dilaporkan!");
+            document.getElementById('formLapor').reset();
+            document.getElementById('btnSubmit').innerText = "Kirim Laporan";
+            loadData();
+        });
+        loadData();
+    </script>
+</body>
+</html>
