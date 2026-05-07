@@ -99,7 +99,7 @@ func handleReports(w http.ResponseWriter, r *http.Request) {
 			Bucket: aws.String(bucketName),
 			Key:    aws.String(fileKey),
 			Body:   file,
-			ACL:    aws.String("public-read"),
+			// ACL:    aws.String("public-read"),
 		})
 		if err != nil {
 			http.Error(w, "Gagal upload S3: "+err.Error(), http.StatusInternalServerError)
