@@ -34,5 +34,8 @@ jobs:
       run: |
         # Membangun Docker Image
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        # Mendorong Image ke AWS ECR
+        # Push Image ke AWS ECR
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Update ECS Service to use the new image
+      run: |
+        aws ecs update-service --cluster translapor-cluster --service translapor-service --force-new-deployment --region ${{ secrets.AWS_REGION }}
